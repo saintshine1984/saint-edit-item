@@ -1,0 +1,304 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../saint-dropdown-menu/saint-dropdown-menu.html">
+<link rel="import" href="../saint-datepicker/saint-datepicker.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<script src="../jquery/dist/jquery.min.js"></script>
+<!--
+Example:
+
+    <template is="dom-bind" id="app">
+      
+      <saint-edit-item-card
+        id="edit"
+        on-confirm="onConfirm">
+
+        <saint-edit-item
+          name="name"
+          type="text"
+          value="テスト"
+          label="名前">
+        </saint-edit-item>
+
+        <saint-edit-item 
+          name="birthday"
+          type="date"
+          value="1984-04-02"
+          label="誕生日">
+        </saint-edit-item>
+
+        <saint-edit-item 
+          name="area"
+          type="list"
+          list$="{{areas}}"
+          value="1"
+          label="居住地">
+        </saint-edit-item>
+
+      </saint-edit-item-card>
+    </template>
+    <script>
+      var app = document.querySelector('#app');
+      app.areas = ['東京', '京都', '大坂'];
+      app.onConfirm = function(event) {
+        var result = event.detail.result;
+        alert(JSON.stringify(result));
+      };
+    </script>
+
+@demo
+-->
+<dom-module id="saint-edit-item-card">
+
+  <style is="custom-style" include="iron-flex iron-flex-alignment">
+    :host {
+
+    }
+    paper-card {
+      width: 100%;
+      @apply(--saint-edit-item-card-card);
+    }
+    paper-card .viewer {
+
+    }
+    paper-card .editor {
+      display: none;
+    }
+    paper-card .editor /deep/ paper-input {
+      width: 100%;
+      --paper-input-container-input: {
+        @apply(--saint-edit-item-card-input);  
+      };
+    }
+    paper-card .editor saint-dropdown-menu {
+      width: 100%;
+      padding: 0px;
+    }
+    #container {
+      @apply(--saint-edit-item-card-container);
+    }
+    .card-content paper-item {
+      @apply(--layout-horizontal);
+    }
+    .card-content paper-item .item-label {
+      min-width: 60px;
+      min-height: 24px;
+      color: var(--paper-light-blue-a700);
+      @apply(--saint-edit-item-card-label);  
+    }
+    .card-content paper-item .item-value {
+      @apply(--saint-edit-item-card-input);  
+    }
+    
+    .edit-button {
+      position: absolute;
+      top: 4px;
+      right: 0px;
+      padding: 8px;
+      font-size: 12px;
+      color: var(--paper-blue-300);
+    }
+
+    @media (max-width: 600px) {
+      .card-content {
+        padding: 4px;
+      }
+    }
+  </style>
+
+  <template>
+    <div id="container">
+    <paper-card
+      heading="ユーザー情報">
+
+      <div class="viewer edit-toggle">
+        <paper-button
+          class="private-menu edit-button"
+          on-click="_toggle">
+          編集
+        </paper-button>
+        <div class="card-content">
+          <template is="dom-repeat" items="{{_vValues}}">
+            <paper-item class="item">
+              <div class="item-label">{{item.label}}</div>
+              <div class="item-value">{{item.text}}</div>
+            </paper-item>
+          </template>
+        </div>
+      </div>
+      <div class="editor edit-toggle hide">
+        <div class="card-content">
+          <template is="dom-repeat" items="{{_eValues}}">
+            <paper-item class="item">
+              <div class="item-label">{{item.label}}</div>
+              <template is="dom-if" if="{{_isTypeCheck(item.type, 'text')}}">
+                <paper-input
+                  id="{{item.name}}"
+                  class="input"
+                  value="{{item.value}}"
+                  no-label-float>
+                </paper-input>
+              </template>
+              <!-- Type: List -->
+              <template is="dom-if" if="{{_isTypeCheck(item.type, 'list')}}">
+                <saint-dropdown-menu
+                  id="{{item.name}}"
+                  class="input"
+                  selected="{{item.value}}"
+                  no-display-error
+                  no-label-float>                      
+                  <template is="dom-repeat" items="{{item.list}}">
+                    <paper-item value$="{{index}}">{{item}}</paper-item>
+                  </template>
+                </saint-dropdown-menu> 
+              </template>
+              <!-- Type: Birthday -->
+              <template is="dom-if" if="{{_isTypeCheck(item.type, 'date')}}">
+                <saint-datepicker
+                  id="{{item.name}}"
+                  class="input"
+                  init-date="{{item.value}}"
+                  no-label-float
+                  year-label="年"
+                  month-label="月"
+                  day-label="日"
+                  year-postfix=""
+                  month-postfix=""
+                  day-postfix=""
+                  postfix-style>
+                </saint-datepicker>
+              </template>
+            </paper-item>
+          </template>
+        </div>
+        <div class="card-actions">
+          <paper-button on-click="_onClickConfirm">OK</paper-button>
+          <paper-button on-click="_onClickCancel">CANCEL</paper-button>
+        </div>
+      </div>
+    </paper-card>
+    </div>
+    
+    <data id="data" hidden>
+      <content></content>
+    </data>
+  </template>
+
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'saint-edit-item-card',
+    properties: {
+      _vValues: {
+        type: Array,
+        value: [],
+        notify: true
+      },
+      _eValues: {
+        type: Array,
+        value: [],
+        notify: true
+      },
+    },
+    // Element Lifecycle
+    ready: function() {
+      
+    },
+    attached: function() {
+      var source = this.querySelectorAll('data saint-edit-item');
+      this._vValues = [];
+      this._eValues = [];
+
+      for (var i = 0; i < source.length; i++) {
+        var data = {
+          name: source[i].getAttribute('name'),
+          type: source[i].getAttribute('type'),
+          list: JSON.parse(source[i].getAttribute('list')),
+          label: source[i].getAttribute('label'),
+          value: source[i].getAttribute('value')
+        };
+        
+        var curr = {
+          name: data['name'],
+          label: data['label'],
+          value: data['value'],
+          text: data['type'] == 'list' ? data['list'][data['value']] : data['value']
+        };
+
+        this._vValues = this._vValues.concat(curr);
+        this._eValues = this._eValues.concat(data);
+      }
+      this.updateStyles();
+    },
+
+    _isTypeCheck: function(type, check) {
+      return type === check;
+    },
+    _onClickConfirm: function(evnet) {
+      var result = {};
+      var arTemp = [];
+      for (var i = 0; i < this._eValues.length; i++) {
+        var item = this._eValues[i];
+        var input = document.getElementById(item.name);
+        var temp = {};
+        temp['label'] = item['label'];
+        temp['name'] = item.name;
+        switch (item.type) {
+          case 'text':
+          case 'date': 
+            temp['value'] = input.value;
+            temp['text'] = input.value;
+            break;
+          case 'list':
+            temp['value'] = input.value;
+            temp['text'] = item.list[input.value];
+            break;
+          default:
+        }
+        arTemp = arTemp.concat([temp]);
+        result[item.name] = input.value;
+      }
+      this._vValues = arTemp.concat([]);
+      this.fire('confirm', {result: result});
+      this._toggle();
+    },
+    _onClickCancel: function(event) {
+      for (var i = 0; i < this._vValues.length; i++) {
+        var item = this._vValues[i];
+        var input = document.getElementById(item.name);
+        switch (input.localName) {
+          case 'paper-input':
+            input.value = item.value;
+            break;
+          case 'saint-birthday-dropdown-menu':
+            var temp = item.value.split('-');
+            // input.setDate(temp[0], temp[1], temp[2]);
+            input.year = Number(temp[0]);
+            input.month = Number(temp[1]);
+            input.day = Number(temp[2]);
+          case 'saint-dropdown-menu':
+            input.selected = Number(item.value);
+            break;
+        }
+      }
+      this._toggle();
+    },
+    _toggle: function(event) {
+      var toggles = this.querySelectorAll('.edit-toggle');
+      $(toggles).toggle();
+    },
+  });
+
+</script>

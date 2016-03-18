@@ -1,0 +1,74 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>saint-edit-item-card Demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../saint-edit-item-card.html">
+  </head>
+
+  <body>
+    <style is="custom-style">
+        #edit {
+          --saint-edit-item-card-container: {
+            width: 350px;
+          };
+          --paper-card-header-text: {
+            font-size: 20px;
+          }
+        }
+      
+    </style>
+    <template is="dom-bind" id="app">
+      
+    <saint-edit-item-card
+      id="edit"
+      on-confirm="onConfirm">
+
+      <saint-edit-item
+        name="name"
+        type="text"
+        value="テスト"
+        label="名前">
+      </saint-edit-item>
+
+      <saint-edit-item 
+        name="birthday"
+        type="date"
+        value="1984-04-02"
+        label="誕生日">
+      </saint-edit-item>
+
+      <saint-edit-item 
+        name="area"
+        type="list"
+        list$="{{areas}}"
+        value="1"
+        label="居住地">
+      </saint-edit-item>
+
+    </saint-edit-item-card>
+
+    <div id="result">result</div>
+    </template>
+    <script>
+      var app = document.querySelector('#app');
+      app.areas = ['東京', '京都', '大坂'];
+      app.onConfirm = function(event) {
+        var result = event.detail.result;
+        app.$.result.innerHTML = JSON.stringify(result);
+      };
+    </script>
+
+  </body>
+</html>

@@ -1,0 +1,37 @@
+{
+  "name": "saint-edit-item-card",
+  "version": "0.0.1",
+  "authors": [
+    "Anonymous <anonymous@example.com>"
+  ],
+  "description": "An element providing a solution to no problem in particular.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "seed"
+  ],
+  "main": "saint-edit-item-card.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/saintshine84/saint-edit-item-card/",
+  "ignore": [
+    "/.*",
+    "/test/",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0",
+    "paper-card": "PolymerElements/paper-card#^1.1.1",
+    "paper-button": "PolymerElements/paper-button#^1.0.11",
+    "jquery": "^2.2.1",
+    "paper-input": "PolymerElements/paper-input#^1.1.10",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.1.3",
+    "paper-menu": "PolymerElements/paper-menu#^1.2.2",
+    "saint-dropdown-menu": "saintshine84/saint-dropdown-menu#^0.0.9",
+    "saint-datepicker": "saintshine84/saint-datepicker"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*"
+  }
+}
