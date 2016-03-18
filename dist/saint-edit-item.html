@@ -162,7 +162,6 @@ Example:
       },
       list: {
         type: Array,
-        value: [],
         observer: '_listObserve'
       },
       listTextAttrName: {
@@ -216,7 +215,9 @@ Example:
       return result;
     },
     _checkListValue: function(item) {
-      return (typeof item === 'string') ? item : item[this.listTextAttrName];
+      if (item !== undefined) {
+        return (typeof item === 'string') ? item : item[this.listTextAttrName];  
+      }
     },
     _computed: function(type, value) {
       switch (type) {
@@ -224,7 +225,6 @@ Example:
           if (this.list) {
             var item = this.list[Number(value)];
             var text = this._checkListValue(item);
-            console.log('list', text);
             return text;
           }
         case 'text':
