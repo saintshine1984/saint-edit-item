@@ -115,7 +115,7 @@ Example:
             no-display-error
             no-label-float>                      
             <template is="dom-repeat" items="{{list}}">
-              <paper-item value$="{{index}}">{{item}}</paper-item>
+              <paper-item value$="{{index}}">{{_checkListValue(item)}}</paper-item>
             </template>
           </saint-dropdown-menu> 
         </template>
@@ -163,6 +163,11 @@ Example:
       list: {
         type: Array,
         value: [],
+        observer: '_listObserve'
+      },
+      listTextAttrName: {
+        type: String,
+        value: 'name'
       },
       isSingleMode: {
         type: Boolean,
@@ -210,12 +215,17 @@ Example:
       this.fire('save', {result: result});
       return result;
     },
+    _checkListValue: function(item) {
+      return (typeof item === 'string') ? item : item[this.listTextAttrName];
+    },
     _computed: function(type, value) {
       switch (type) {
         case 'list':
           if (this.list) {
-            console.log('list', this.list[Number(value)]);
-            return this.list[Number(value)];  
+            var item = this.list[Number(value)];
+            var text = this._checkListValue(item);
+            console.log('list', text);
+            return text;
           }
         case 'text':
         case 'number':
@@ -224,12 +234,13 @@ Example:
       }
       return value;
     },
-    _list: function() {
-      // this._computed();
+    _listObserve: function() {
+      this._computed(this.type, this.value);
     },
     _isTypeCheck: function(type, check) {
       return type === check;
     },
+
     toggle: function(event) {
       var viewer = this.$.viewer;
       var editor = this.$.editor;

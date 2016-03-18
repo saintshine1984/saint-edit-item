@@ -95,6 +95,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             is-single-mode
             on-save="onSave">
           </saint-edit-item>
+
+          <saint-edit-item 
+            name="area"
+            type="list"
+            list$="{{bodyTypes}}"
+            value="1"
+            label="居住地"
+            is-single-mode
+            on-save="onSave">
+          </saint-edit-item>
           <pre id="result2">result</pre>
         </div>
       </div>
@@ -103,6 +113,63 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script>
       var app = document.querySelector('#app');
       app.areas = ['東京', '京都', '大坂'];
+      app.bodyTypes = [
+
+{
+
+    "id": "0",
+    "name": "未設定"
+
+},
+{
+
+    "id": "1",
+    "name": "細め"
+
+},
+{
+
+    "id": "2",
+    "name": "スレンダー"
+
+},
+{
+
+    "id": "3",
+    "name": "普通"
+
+},
+{
+
+    "id": "4",
+    "name": "グラマー"
+
+},
+{
+
+    "id": "5",
+    "name": "筋肉質"
+
+},
+{
+
+    "id": "6",
+    "name": "ややぽっちゃり"
+
+},
+{
+
+    "id": "7",
+    "name": "太め"
+
+},
+
+    {
+        "id": "8",
+        "name": "秘密"
+    }
+
+];
       app.onConfirm = function(event) {
         var result = event.detail;
         app.$.result.innerHTML = JSON.stringify(result, null, "    ");
