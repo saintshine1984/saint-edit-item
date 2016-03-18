@@ -19,55 +19,98 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <body>
     <style is="custom-style">
-        #edit {
-          --saint-edit-item-card-container: {
-            width: 350px;
-          };
-          --paper-card-header-text: {
-            font-size: 20px;
-          }
+      div {
+        float: left;
+      }
+      saint-edit-item-card {
+        --saint-edit-item-card-container: {
+          width: 350px;
+        };
+        --paper-card-header-text: {
+          font-size: 20px;
         }
+      }
+      saint-edit-item div {
+        width: 300px;
+      }
       
     </style>
     <template is="dom-bind" id="app">
+      <div>
+        <h4>saint-edit-item-card</h4>
+        <saint-edit-item-card
+          id="editCard"
+          on-confirm="onConfirm">
+
+          <saint-edit-item
+            name="name"
+            type="text"
+            value="テスト"
+            label="名前">
+          </saint-edit-item>
+
+          <saint-edit-item 
+            name="birthday"
+            type="date"
+            value="1984-04-02"
+            label="誕生日">
+          </saint-edit-item>
+
+          <saint-edit-item 
+            name="area"
+            type="list"
+            list$="{{areas}}"
+            value="1"
+            label="居住地">
+          </saint-edit-item>
+        </saint-edit-item-card>
+        <pre id="result">result</pre>
+      </div>
+      <div style="width: 600px">
+        <h4>saint-edit-item Single Mode</h4>
+        <saint-edit-item
+            name="name"
+            type="text"
+            value="テスト"
+            label="名前"
+            is-single-mode
+            on-save="onSave">
+          </saint-edit-item>
+
+          <saint-edit-item 
+            name="birthday"
+            type="date"
+            value="1984-04-02"
+            label="誕生日"
+            is-single-mode
+            on-save="onSave">
+          </saint-edit-item>
+
+          <saint-edit-item 
+            name="area"
+            type="list"
+            list$="{{areas}}"
+            value="1"
+            label="居住地"
+            is-single-mode
+            on-save="onSave">
+          </saint-edit-item>
+          <pre id="result2">result</pre>
+        </div>
+      </div>
       
-    <saint-edit-item-card
-      id="edit"
-      on-confirm="onConfirm">
-
-      <saint-edit-item
-        name="name"
-        type="text"
-        value="テスト"
-        label="名前">
-      </saint-edit-item>
-
-      <saint-edit-item 
-        name="birthday"
-        type="date"
-        value="1984-04-02"
-        label="誕生日">
-      </saint-edit-item>
-
-      <saint-edit-item 
-        name="area"
-        type="list"
-        list$="{{areas}}"
-        value="1"
-        label="居住地">
-      </saint-edit-item>
-
-    </saint-edit-item-card>
-
-    <div id="result">result</div>
     </template>
     <script>
       var app = document.querySelector('#app');
       app.areas = ['東京', '京都', '大坂'];
       app.onConfirm = function(event) {
-        var result = event.detail.result;
-        app.$.result.innerHTML = JSON.stringify(result);
+        var result = event.detail;
+        app.$.result.innerHTML = JSON.stringify(result, null, "    ");
       };
+      app.onSave = function(event) {
+        var result = event.detail;
+        app.$.result2.innerHTML = JSON.stringify(result, null, "    ");
+      }
     </script>
 
   </body>

@@ -1,0 +1,249 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../paper-input/paper-input.html">
+<link rel="import" href="../../saint-dropdown-menu/saint-dropdown-menu.html">
+<link rel="import" href="../../saint-datepicker/saint-datepicker.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
+<script src="../../jquery/dist/jquery.min.js"></script>
+<!--
+Example:
+
+  <saint-edit-item
+    name="name"
+    type="text"
+    value="テスト"
+    label="名前">
+  </saint-edit-item>
+     
+@demo
+-->
+<dom-module id="saint-edit-item">
+
+  <style is="custom-style" include="iron-flex iron-flex-alignment">
+    :host {
+      width: inherit;
+    }
+    #viewer {
+
+    }
+    #editor {
+      display: none;
+    }
+
+    #editor /deep/ paper-input {
+      width: 100%;
+      --paper-input-container-input: {
+        @apply(--saint-edit-item-input);  
+      };
+    }
+    #editor saint-datepicker {
+      width: 100%;
+      --saint-datepicker-container: {
+        @apply(--layout-flex);
+      }
+    }
+    #editor saint-dropdown-menu {
+      width: 100%;
+      padding: 0px;
+    }
+    
+    paper-item {
+      @apply(--layout-horizontal);
+    }
+    paper-item .item-label {
+      min-width: 60px;
+      min-height: 24px;
+      color: var(--paper-light-blue-a700);
+      @apply(--saint-edit-item-label);  
+    }
+    paper-item .item-value {
+      @apply(--layout-flex);  
+      @apply(--saint-edit-item-input);  
+    }
+    
+    .edit-button {
+      position: absolute;
+      top: 4px;
+      right: 0px;
+      padding: 8px;
+      font-size: 12px;
+      color: var(--paper-blue-300);
+    }
+
+    @media (max-width: 600px) {
+      .card-content {
+        padding: 4px;
+      }
+    }
+  </style>
+
+  <template>
+    <div id="viewer">
+      <paper-item class="item">
+        <div class="item-label">{{label}}</div>
+        <div class="item-value">{{_text}}</div>
+        <template is="dom-if" if="{{isSingleMode}}">
+          <paper-button class="item-button" on-click="toggle" class="end">EDIT</paper-button>
+        </template>
+      </paper-item>
+    </div>
+    <div id="editor">
+      <paper-item class="item">
+        <div class="item-label">{{label}}</div>
+        <template is="dom-if" if="{{_isTypeCheck(type, 'text')}}">
+          <paper-input
+            id="{{name}}"
+            class="input text"
+            value="{{value}}"
+            no-label-float>
+          </paper-input>
+        </template>
+        <!-- Type: List -->
+        <template is="dom-if" if="{{_isTypeCheck(type, 'list')}}">
+          <saint-dropdown-menu
+            id="{{name}}"
+            class="input list"
+            selected="{{value}}"
+            no-display-error
+            no-label-float>                      
+            <template is="dom-repeat" items="{{list}}">
+              <paper-item value$="{{index}}">{{item}}</paper-item>
+            </template>
+          </saint-dropdown-menu> 
+        </template>
+        <!-- Type: Birthday -->
+        <template is="dom-if" if="{{_isTypeCheck(type, 'date')}}">
+          <saint-datepicker
+            id="{{name}}"
+            class="input date"
+            init-date="{{value}}"
+            no-label-float
+            year-label="年"
+            month-label="月"
+            day-label="日"
+            year-postfix=""
+            month-postfix=""
+            day-postfix=""
+            postfix-style>
+          </saint-datepicker>
+        </template>
+        <template is="dom-if" if="{{isSingleMode}}">
+          <paper-button class="item-button" on-click="save" class="end">SAVE</paper-button>
+          <paper-button class="item-button" on-click="cancel" class="end">CANCEL</paper-button>
+        </template>
+      </paper-item>
+      
+    </div>
+    
+
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'saint-edit-item',
+    properties: {
+      label: {
+        type: String,
+      },
+      value: {
+        type: String,
+      },
+      type: {
+        type: String,
+      },
+      list: {
+        type: Array,
+        value: [],
+      },
+      isSingleMode: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      },
+      _text: {
+        type: String,
+        computed: '_computed(type, value)'
+      },
+      _isEdit: {
+        type: Boolean,
+        value: false,
+      },
+    },
+    // Element Lifecycle
+    ready: function() {
+
+    },
+    cancel: function() {
+      this.toggle();
+      var input = this.querySelector('.input.' + this.type);
+      this.value = this._oldValue;
+      switch (this.type) {
+        case 'list':
+          input.selected = Number(this.value);
+          break;
+        case 'text':
+        case 'number':
+          input.value = this.value;
+          break;
+        case 'date':
+          var temp = this.value.split('-');
+          input.year = Number(temp[0]);
+          input.month = Number(temp[1]);
+          input.day = Number(temp[2]);
+          break;
+      }
+    },
+    save: function() {
+      this.toggle();
+      var input = this.querySelector('.input.' + this.type);
+      this.value = input.value;
+      var result = {name: this.name, type: this.type, value: this.value, text: this._text};
+      this.fire('save', {result: result});
+      return result;
+    },
+    _computed: function(type, value) {
+      switch (type) {
+        case 'list':
+          if (this.list) {
+            console.log('list', this.list[Number(value)]);
+            return this.list[Number(value)];  
+          }
+        case 'text':
+        case 'number':
+        case 'date':
+          return value;
+      }
+      return value;
+    },
+    _list: function() {
+      // this._computed();
+    },
+    _isTypeCheck: function(type, check) {
+      return type === check;
+    },
+    toggle: function(event) {
+      var viewer = this.$.viewer;
+      var editor = this.$.editor;
+      if (this._isEdit) {
+        $(viewer).show();
+        $(editor).hide();
+
+      } else {
+        $(viewer).hide();
+        $(editor).show();
+        this._oldValue = this.value;
+      }
+      this._isEdit = !this._isEdit;
+    },
+  });
+
+</script>

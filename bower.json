@@ -11,7 +11,10 @@
     "polymer",
     "seed"
   ],
-  "main": "saint-edit-item-card.html",
+  "main": [
+    "saint-edit-item.html",
+    "saint-edit-item-card.html"    
+  ],
   "license": "http://polymer.github.io/LICENSE.txt",
   "homepage": "https://github.com/saintshine84/saint-edit-item-card/",
   "ignore": [
