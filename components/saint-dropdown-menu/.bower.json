@@ -1,0 +1,46 @@
+{
+  "name": "saint-dropdown-menu",
+  "version": "0.0.9",
+  "authors": [
+    "SHIN <saintshine84@gmail.com>"
+  ],
+  "description": "extend paper-dropdown-menu",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "dropdown-menu",
+    "birthday",
+    "birthdate"
+  ],
+  "main": [
+    "saint-dropdown-menu.html",
+    "saint-birthday-dropdown-menu.html"
+  ],
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/saintshine84/saint-dropdown-menu",
+  "ignore": [
+    "/.*",
+    "/test/",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.1.3",
+    "paper-menu": "PolymerElements/paper-menu#^1.2.2",
+    "paper-item": "PolymerElements/paper-item#^1.1.4"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*"
+  },
+  "_release": "0.0.9",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.0.9",
+    "commit": "d54a5db87539fc72aafdd856dbe2858fe3ccef96"
+  },
+  "_source": "git://github.com/saintshine84/saint-dropdown-menu.git",
+  "_target": "^0.0.9",
+  "_originalSource": "saintshine84/saint-dropdown-menu"
+}

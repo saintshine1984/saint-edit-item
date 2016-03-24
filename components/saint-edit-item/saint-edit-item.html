@@ -1,0 +1,513 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../saint-dropdown-menu/saint-dropdown-menu.html">
+<link rel="import" href="../saint-datepicker/saint-datepicker.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<script src="../jquery/dist/jquery.min.js"></script>
+
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <saint-edit-item
+      name="name"
+      type="text"
+      value="テスト"
+      label="名前"
+      is-single-mode>
+    </saint-edit-item>
+
+    <saint-edit-item
+      name="hobby"
+      type="text"
+      value="運動,ゲーム"
+      label="趣味"
+      is-multi-value
+      is-single-mode>
+    </saint-edit-item>
+
+    <saint-edit-item 
+      name="birthday"
+      type="date"
+      value="1984-04-02"
+      label="誕生日"
+      is-single-mode>
+    </saint-edit-item>
+
+    <saint-edit-item 
+      name="area"
+      type="list"
+      reference-list$="{{fruits}}"
+      value="1"
+      label="果物"
+      is-multi-value
+      is-single-mode>
+    </saint-edit-item>
+
+@demo
+-->
+<dom-module id="saint-edit-item">
+
+  <style is="custom-style" include="iron-flex iron-flex-alignment">
+    
+    :host {
+      
+    }
+    #viewer {
+      
+    }
+    #editor {
+      display: none;
+    }
+
+    #editor /deep/ paper-input {
+      width: 100%;
+      --paper-input-container: {
+        @apply(--saint-edit-item-input-container);
+      };
+      --paper-input-container-input: {
+        @apply(--saint-edit-item-input);
+      };
+    }
+    #editor saint-datepicker {
+      width: 100%;
+      --saint-datepicker-container: {
+        @apply(--layout-flex);
+      }
+    }
+    #editor saint-dropdown-menu {
+      width: 100%;
+      --paper-input-container-input: {
+        /*padding: 0px;*/
+        @apply(--saint-edit-item-input);  
+      };
+    }
+    paper-item.item {
+      min-height: 40px;
+      @apply(--layout-flex); 
+      @apply(--layout-horizontal);
+    }
+    paper-item .item-label {
+      min-width: 60px;
+      min-height: 24px;
+      padding: 8px;
+      color: var(--paper-light-blue-a700);
+      align-self: flex-start;
+      @apply(--saint-edit-item-label);
+    }
+    paper-item .item-value {
+      padding: 8px 0px;
+      align-self: flex-start;
+      @apply(--layout-flex);  
+    }
+    paper-item .item-buttons {
+      align-self: flex-start;
+    }
+    paper-item .item-buttons #btnSave {
+      color: var(--paper-light-green-a700);
+      @apply(--saint-edit-item-button-save);
+    }
+    paper-item .item-buttons #btnCancel {
+      color: var(--paper-red-a100);
+      @apply(--saint-edit-item-button-cancel);
+    }
+    paper-item .item-input {
+      @apply(--layout-flex);  
+      @apply(--saint-edit-item-input);  
+    }
+    paper-item .item-text:not([mid="0"]) {
+      padding-top: 16px;
+    }
+
+    paper-icon-button {
+      align-self: flex-start;
+      color: var(--paper-grey-500);
+    }
+
+    @media (max-width: 600px) {
+      paper-item {
+        padding: 0;
+      }
+    }
+  </style>
+
+  <template>
+    <div id="viewer">
+      <paper-item class="item">
+        <div class="item-label">{{label}}</div>
+        <div class="item-value vertical layout">
+          <template is="dom-repeat" items="{{_values}}">
+            <div class="item-text" mid$={{index}}>{{_getText(index, item)}}</div>
+          </template>
+        </div>
+        <template is="dom-if" if="{{isSingleMode}}">
+          <template is="dom-if" if="{{!readOnly}}">
+            <paper-icon-button
+              icon="icons:create"
+              on-click="toggle">
+            </paper-icon-button>
+          </template>
+        </template>
+      </paper-item>
+    </div>
+
+    <div id="editor">      
+      <paper-item class="item">
+        <div class="item-label">{{label}}</div>
+        <div class="item-input vertical layout">
+          <template is="dom-repeat" items="{{_values}}">
+            <div class="horizontal layout">
+              <!-- Type: Text -->
+              <template is="dom-if" if="{{_isTypeCheck(type, 'text')}}">
+                <paper-input
+                  id="{{name}}"
+                  mid$="{{index}}"
+                  class="input text"
+                  value="{{_getValue(index, item)}}"
+                  read-only=[[readOnly]]
+                  no-label-float>
+                </paper-input>
+              </template>
+              <!-- Type: List -->
+              <template is="dom-if" if="{{_isTypeCheck(type, 'list')}}">
+                <saint-dropdown-menu
+                  id="{{name}}"
+                  mid$="{{index}}"
+                  class="input list"
+                  selected="{{_getValue(index, item)}}"
+                  no-display-error
+                  no-label-float>                      
+                  <template is="dom-repeat" items="{{referenceList}}">
+                    <paper-item value$="{{index}}">{{_getListItemText(item)}}</paper-item>
+                  </template>
+                </saint-dropdown-menu> 
+              </template>
+              <!-- Type: Birthday -->
+              <template is="dom-if" if="{{_isTypeCheck(type, 'date')}}">
+                <saint-datepicker
+                  id="{{name}}"
+                  mid$="{{index}}"
+                  class="input date"
+                  init-date$="{{_getValue(index, item)}}"
+                  no-label-float
+                  year-label="年"
+                  month-label="月"
+                  day-label="日"
+                  year-postfix=""
+                  month-postfix=""
+                  day-postfix=""
+                  on-ready="_onReadyDate"
+                  postfix-style>
+                </saint-datepicker>
+              </template>
+
+              <template is="dom-if" if="{{isMultiValue}}">
+                <template is="dom-if" if="{{_isFirst(index)}}">            
+                  <paper-icon-button
+                    icon="icons:add"
+                    on-click="_onClickMaAdd"></paper-icon-button>
+                </template>
+                <template is="dom-if" if="{{!_isFirst(index)}}">
+                  <paper-icon-button
+                    icon="icons:remove"
+                    name$="{{name}}"
+                    mid$="{{index}}"
+                    on-click="_onClickMaRemove"></paper-icon-button>
+                </template>
+              </template>
+            </div>
+          </template>
+        </div>
+        <template is="dom-if" if="{{isSingleMode}}">
+          <template is="dom-if" if="{{!readOnly}}">
+            <div class="item-buttons">
+              <!-- Save Button -->
+              <paper-icon-button
+                id="btnSave"
+                icon="icons:done"
+                on-click="save">
+              </paper-icon-button>
+              <!-- Cancel Button -->
+              <paper-icon-button
+                id="btnCancel"
+                icon="icons:clear"
+                on-click="cancel">
+              </paper-icon-button>
+            </div>
+          </template>
+        </template>
+      </paper-item>
+      
+    </div>
+    
+
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'saint-edit-item',
+    properties: {
+      /**
+       * Can Add More Values. Return result type is array.
+       */
+      isMultiValue: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      },
+      /**
+       * Can using function button individually.
+       */
+      isSingleMode: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      },
+      /**
+       * Item Label
+       */
+      label: {
+        type: String,
+      },
+      /**
+       * can not edit value.
+       */
+      readOnly: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      },
+      /**
+       * create drop-down menu list using this array.
+       *
+       * @type {[{id: number, name: string}]}
+       */
+      referenceList: {
+        type: Array,
+        observer: '_observeList'
+      },
+      /**
+       * item type. Select in text, list, date.
+       * @type {{'"text"', '"list"', '"date"'}}
+       */
+      type: {
+        type: String,
+        value: 'text'
+      },
+      /**
+       * value
+       */
+      value: {
+        type: String,
+        observer: '_observeValue',
+      },
+      _isEdit: {
+        type: Boolean,
+        value: false,
+      },
+      _values: {
+        type: Array,
+        value: [],
+        notify: true,
+      },
+    },
+
+    /**
+     * The `item-save` event is fired whenever `save` is called.
+     *
+     * @event item-save
+     * @detail {{result: Object}}
+     */
+
+    // Element Lifecycle
+    ready: function() {
+
+
+    },
+    /**
+     * Cancel Editing
+     **/
+    cancel: function() {
+      this.toggle();
+      var inputs = this.querySelectorAll('.input.' + this.type);
+      this._values = this._oldValue;
+      for (var i = 0; i < inputs.length; i++) {
+        var input = inputs[i];
+        var value = this._getValue(i);
+        switch (this.type) {
+          case 'list':
+            input.selected = Number(value);
+            break;
+          case 'text':
+          case 'number':
+            input.value = value;
+            break;
+          case 'date':
+            var temp = value.split('-');
+            input.year = Number(temp[0]);
+            input.month = Number(temp[1]);
+            input.day = Number(temp[2]);
+            break;
+        }
+      }
+    },
+    /**
+     * Save current edit item value
+     *
+     * @return {object} JSON type object return.
+     */
+    save: function() {
+      this.toggle();
+      var inputs = this.querySelectorAll('.input.' + this.type);
+      var temps = [];
+      var values = [];
+      for (var i = 0; i < inputs.length; i++) {
+        var input = inputs[i];
+        var temp = {};
+        temp.value = input.value;
+        if (this.isMultiValue) {          
+          if (this.type === 'list') {
+            temp.name = this._getListItemText(this.referenceList[input.value]);  
+            values = values.concat([Number(input.value)]);
+          } else {
+            temp = input.value;
+            values = values.concat([input.value]);
+          }
+        }
+        temps = temps.concat(temp);
+      }
+
+      
+      var result = {name: this.name,
+                    type: this.type,
+                    text: this._getText[0]};
+
+      result.value = this.isMultiValue || this.type === 'list' ? temps : temps[0].value;
+      this.value = this.isMultiValue ? JSON.stringify(values) : temps[0].value;
+
+
+      this.fire('item-save', {result: result});
+      return result;
+    },
+    /**
+     * toggle edit, viewer mode
+     */
+    toggle: function() {
+      var viewer = this.$.viewer;
+      var editor = this.$.editor;
+
+      if (this._isEdit) {
+        if (!this.readOnly) {
+          $(viewer).show();
+          $(editor).hide();
+        }
+      } else {
+        if (!this.readOnly) {
+          $(viewer).hide();
+          $(editor).show();
+        }
+        this._oldValue = this._values.slice(0, this._values.length);  
+      }
+      this._isEdit = !this._isEdit;
+    },
+    
+    
+    
+    _computeText: function(type, value) {
+      switch (type) {
+        case 'list':
+          if (this.referenceList) {
+            var item = this.referenceList[Number(value)];
+            var text = this._getListItemText(item);
+            return text;
+          }
+        case 'text':
+        case 'number':
+        case 'date':
+          return value;
+      }
+      return value;
+    },
+    _getListItemText: function(item) {
+      if (item !== undefined) {
+        return (typeof item === 'string') ? item : item.name;  
+      }
+    },
+    _getText: function(index) {
+      return this._computeText(this.type, this._getValue(index));
+    },
+    _getValue: function(index) {
+      return this._values[index];
+    },
+    _isFirst: function(index) {
+      return index === 0;
+    },
+    _isTypeCheck: function(type, check) {
+      return type === check;
+    },
+    _observeList: function() {
+      for (var i = 0; i < this._values.length; i++) {
+        this._computeText(this.type, this._values[i]);
+      }      
+    },
+    _observeValue: function(newValue, oldValue) {
+      if (this.isMultiValue) {
+        var temp;
+        try {
+          temp = JSON.parse(newValue);
+        } catch(e) {
+          temp = String(newValue).split(',');
+        }
+        if (typeof temp !== 'object') {
+          temp = [temp];
+        }
+        this._values = temp;
+      } else {
+        this._values = [];
+        this._values = this._values.concat([newValue]);
+      }
+    },
+    _onClickMaAdd: function() {      
+      this._values = this._values.concat(['']);
+    },
+    _onClickMaRemove: function(event) {
+      var button = Polymer.dom(event).localTarget;
+      var mid = button.getAttribute('mid');
+      var name = button.getAttribute('name');
+      var query = '#' + name + '[mid="' + mid + '"]';
+      var input = this.querySelector(query);
+      this._values.splice(Number(mid), 1);
+      this._values = this._values.concat();
+    },
+    /**
+     * for set date
+     **/
+    _onReadyDate: function(event) {
+      var test = event.target;
+      var date = test.getAttribute('init-date');
+      if (date) {
+        var temp = date.split('-');
+        var year = parseInt(temp[0]);
+        var month = parseInt(temp[1]);
+        var day = parseInt(temp[2]);
+        test.setDate(year, month, day);
+      }
+    },
+    
+  });
+</script>
