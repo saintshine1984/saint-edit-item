@@ -14,170 +14,210 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
     <title>saint-edit-item-card Demo</title>
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    <link rel="import" href="../saint-edit-item-card.html">
+    <script src="../../jquery/dist/jquery.min.js"></script>
+    <link rel="import" href="../saint-edit-item.html">
   </head>
 
   <body>
     <style is="custom-style">
-      div {
-        float: left;
+      h2 {
+        margin: 0 24px;
       }
-      saint-edit-item-card {
-        --saint-edit-item-card-container: {
-          width: 350px;
-        };
-        --paper-card-header-text: {
-          font-size: 20px;
+      div.example {
+        float: left;
+        max-width: 500px;
+        width: 100%;
+        margin: 20px;
+      }
+
+      paper-card {
+        width: 100%;
+      }
+
+      #editButton {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        color: var(--paper-grey-500);
+      }
+      saint-edit-item {
+        --saint-edit-item-label: {
+          min-width: 100px;
         }
       }
-      saint-edit-item div {
-        width: 300px;
+
+      .toggle-card.front {
+
       }
-      
+      .toggle-card.back {
+        display: none;
+      }      
     </style>
     <template is="dom-bind" id="app">
-      <div>
-        <h4>saint-edit-item-card</h4>
-        <saint-edit-item-card
-          id="editCard"
-          on-confirm="onConfirm">
+      <h2> &lt;saint-edit-item&gt; </h2>
+      <div id="ex1" class="example">
+        <h4>Group Mode</h4>
+        <paper-card
+          heading="User Info">      
+          <paper-icon-button
+            id="editButton"
+            class="toggle-card front"
+            icon="icons:create"
+            on-click="_onClickEdit">
+          </paper-icon-button>    
+          <div>
+            <saint-edit-item
+              name="name"
+              type="text"
+              value="SHIN"
+              read-only
+              label="Name">
+            </saint-edit-item>
 
-          <saint-edit-item
-            name="name"
-            type="text"
-            value="テスト"
-            label="名前">
-          </saint-edit-item>
+            <saint-edit-item 
+              name="birthday"
+              type="date"
+              value="1984-04-02"
+              label="Birthday">
+            </saint-edit-item>
 
-          <saint-edit-item 
-            name="birthday"
-            type="date"
-            value="1984-04-02"
-            label="誕生日">
-          </saint-edit-item>
-
-          <saint-edit-item 
-            name="area"
-            type="list"
-            list$="{{areas}}"
-            value="1"
-            label="居住地">
-          </saint-edit-item>
-        </saint-edit-item-card>
-        <pre id="result">result</pre>
+            <saint-edit-item 
+              name="area"
+              type="list"
+              reference-list$="{{fruits}}"
+              value="[1,2,0]"
+              is-multi-value
+              label="Fruits">
+            </saint-edit-item>
+          </div>
+          <div class="card-actions toggle-card back">
+            <paper-button on-click="_onClickConfirm">OK</paper-button>
+            <paper-button on-click="_onClickCancel">CANCEL</paper-button>
+          </div>
+        </paper-card>
+        <div>
+          by Functions
+          <pre id="result">result</pre>
+        </div>
       </div>
-      <div style="width: 600px">
-        <h4>saint-edit-item Single Mode</h4>
+      <div class="example">
+        <h4>Single Mode</h4>
         <saint-edit-item
-            name="name"
-            type="text"
-            value="テスト"
-            label="名前"
-            is-single-mode
-            on-save="onSave">
-          </saint-edit-item>
+          name="id"
+          type="text"
+          value="testUserID-1283"
+          label="ID"
+          read-only
+          is-single-mode
+          on-item-save="onSave">
+        </saint-edit-item>
+        <saint-edit-item
+          name="name"
+          type="text"
+          value="テスト"
+          label="名前"
+          is-single-mode
+          on-item-save="onSave">
+        </saint-edit-item>
 
-          <saint-edit-item 
-            name="birthday"
-            type="date"
-            value="1984-04-02"
-            label="誕生日"
-            is-single-mode
-            on-save="onSave">
-          </saint-edit-item>
+        <saint-edit-item
+          name="hobby"
+          type="text"
+          value="運動,ゲーム"
+          label="趣味"
+          is-multi-value
+          is-single-mode
+          on-item-save="onSave">
+        </saint-edit-item>
 
-          <saint-edit-item 
-            name="area"
-            type="list"
-            list$="{{areas}}"
-            value="1"
-            label="居住地"
-            is-single-mode
-            on-save="onSave">
-          </saint-edit-item>
+        <saint-edit-item 
+          name="birthday"
+          type="date"
+          value="1984-04-02"
+          label="誕生日"
+          is-single-mode
+          on-item-save="onSave">
+        </saint-edit-item>
 
-          <saint-edit-item 
-            name="area"
-            type="list"
-            list$="{{bodyTypes}}"
-            value="1"
-            label="居住地"
-            is-single-mode
-            on-save="onSave">
-          </saint-edit-item>
+        <saint-edit-item 
+          name="area"
+          type="list"
+          reference-list$="{{fruits}}"
+          value="1"
+          label="果物"
+          is-multi-value
+          is-single-mode
+          on-item-save="onSave">
+        </saint-edit-item>
+
+        <saint-edit-item 
+          name="area"
+          type="list"
+          reference-list$="{{bodyTypes}}"
+          value="1"
+          label="体型"
+          is-single-mode
+          on-item-save="onSave">
+        </saint-edit-item>
+        <div>
+          by callback on-item-save
           <pre id="result2">result</pre>
         </div>
+      </div>
       </div>
       
     </template>
     <script>
       var app = document.querySelector('#app');
-      app.areas = ['東京', '京都', '大坂'];
+      app.fruits = ['Banana', 'Orange', 'Lemon', 'Apple', 'Mango'];
       app.bodyTypes = [
+                        {'id': '0', 'name': 'NONE'},
+                        {'id': '1', 'name': '細め'},
+                        {'id': '2', 'name': 'スレンダー'},
+                        {'id': '3', 'name': '普通'},
+                        {'id': '4', 'name': 'グラマー'},
+                        {'id': '5', 'name': '筋肉質'},
+                        {'id': '6', 'name': 'ややぽっちゃり'},
+                        {'id': '7', 'name': '太め'},
+                        {'id': '8', 'name': '秘密'}
+                      ];
 
-{
+      app._onClickEdit = function(event) {
+        var toggle = this.$.ex1.querySelectorAll('.toggle-card');
+        var items = this.$.ex1.querySelectorAll('saint-edit-item');
 
-    "id": "0",
-    "name": "未設定"
-
-},
-{
-
-    "id": "1",
-    "name": "細め"
-
-},
-{
-
-    "id": "2",
-    "name": "スレンダー"
-
-},
-{
-
-    "id": "3",
-    "name": "普通"
-
-},
-{
-
-    "id": "4",
-    "name": "グラマー"
-
-},
-{
-
-    "id": "5",
-    "name": "筋肉質"
-
-},
-{
-
-    "id": "6",
-    "name": "ややぽっちゃり"
-
-},
-{
-
-    "id": "7",
-    "name": "太め"
-
-},
-
-    {
-        "id": "8",
-        "name": "秘密"
-    }
-
-];
-      app.onConfirm = function(event) {
-        var result = event.detail;
-        app.$.result.innerHTML = JSON.stringify(result, null, "    ");
+        for (var i = 0; i < items.length; i++) {
+          items[i].toggle();
+        }
+        $(toggle).toggle();
       };
+
+      app._onClickConfirm = function(evnet) {
+        var toggle = this.$.ex1.querySelectorAll('.toggle-card');
+        var items = this.$.ex1.querySelectorAll('saint-edit-item');
+        var results = [];
+
+        for (var i = 0; i < items.length; i++) {
+          var result = items[i].save();
+          results = results.concat(result);
+        }
+        $(toggle).toggle();
+        app.$.result.innerHTML = JSON.stringify(results, null, '    ');        
+      },
+
+      app._onClickCancel = function(event) {
+        var toggle = this.$.ex1.querySelectorAll('.toggle-card');
+        var items = this.$.ex1.querySelectorAll('saint-edit-item');
+        
+        for (var i = 0; i < items.length; i++) {
+          items[i].cancel();
+        }
+        $(toggle).toggle();
+      };
+
       app.onSave = function(event) {
-        var result = event.detail;
-        app.$.result2.innerHTML = JSON.stringify(result, null, "    ");
-      }
+        app.$.result2.innerHTML = JSON.stringify(event.detail, null, '    ');
+      };
     </script>
 
   </body>
