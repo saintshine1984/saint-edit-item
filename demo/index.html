@@ -70,7 +70,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               name="name"
               type="text"
               value="SHIN"
-              read-only
               label="Name">
             </saint-edit-item>
 
@@ -202,6 +201,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           results = results.concat(result);
         }
         $(toggle).toggle();
+        console.log(results);
         app.$.result.innerHTML = JSON.stringify(results, null, '    ');        
       },
 

@@ -10,11 +10,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-input/paper-textarea.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../saint-dropdown-menu/saint-dropdown-menu.html">
 <link rel="import" href="../saint-datepicker/saint-datepicker.html">
+<link rel="import" href="../saint-ntb-converter/saint-ntb-converter.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <script src="../jquery/dist/jquery.min.js"></script>
 
@@ -74,7 +76,8 @@ Example:
       display: none;
     }
 
-    #editor /deep/ paper-input {
+    #editor /deep/ paper-input,
+    #editor /deep/ paper-textarea {
       width: 100%;
       --paper-input-container: {
         @apply(--saint-edit-item-input-container);
@@ -148,10 +151,17 @@ Example:
   <template>
     <div id="viewer">
       <paper-item class="item">
-        <div class="item-label">{{label}}</div>
+        <template is="dom-if" if="{{!noLabel}}">
+          <div class="item-label">{{label}}</div>
+        </template>
         <div class="item-value vertical layout">
           <template is="dom-repeat" items="{{_values}}">
-            <div class="item-text" mid$={{index}}>{{_getText(index, item)}}</div>
+            <div class="item-text" mid$={{index}}>
+              <saint-ntb-converter
+                break-row="1000"
+                content="{{_getText(index, item)}}">              
+              </saint-ntb-converter>
+            </div>
           </template>
         </div>
         <template is="dom-if" if="{{isSingleMode}}">
@@ -167,7 +177,9 @@ Example:
 
     <div id="editor">      
       <paper-item class="item">
-        <div class="item-label">{{label}}</div>
+        <template is="dom-if" if="{{!noLabel}}">
+          <div class="item-label">{{label}}</div>
+        </template>
         <div class="item-input vertical layout">
           <template is="dom-repeat" items="{{_values}}">
             <div class="horizontal layout">
@@ -181,6 +193,17 @@ Example:
                   read-only=[[readOnly]]
                   no-label-float>
                 </paper-input>
+              </template>
+              <!-- Type: TextArea -->
+              <template is="dom-if" if="{{_isTypeCheck(type, 'textarea')}}">
+                <paper-textarea
+                  id="{{name}}"
+                  mid$="{{index}}"
+                  class="input textarea"
+                  value="{{_getValue(index, item)}}"
+                  read-only=[[readOnly]]
+                  no-label-float>
+                </paper-textarea>
               </template>
               <!-- Type: List -->
               <template is="dom-if" if="{{_isTypeCheck(type, 'list')}}">
@@ -285,6 +308,14 @@ Example:
         type: String,
       },
       /**
+       * Hide label.
+       */
+      noLabel: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      },
+      /**
        * can not edit value.
        */
       readOnly: {
@@ -315,6 +346,11 @@ Example:
       value: {
         type: String,
         observer: '_observeValue',
+        notify: true,
+      },
+      _value: {
+        type: String,
+        computed: '_observeValue(value)'
       },
       _isEdit: {
         type: Boolean,
@@ -374,6 +410,7 @@ Example:
     save: function() {
       this.toggle();
       var inputs = this.querySelectorAll('.input.' + this.type);
+      console.log(inputs);
       var temps = [];
       var values = [];
       for (var i = 0; i < inputs.length; i++) {
@@ -391,7 +428,6 @@ Example:
         }
         temps = temps.concat(temp);
       }
-
       
       var result = {name: this.name,
                     type: this.type,
