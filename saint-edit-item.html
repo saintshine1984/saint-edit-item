@@ -94,9 +94,11 @@ Example:
     }
     #editor saint-dropdown-menu {
       width: 100%;
-      --paper-input-container-input: {
-        /*padding: 0px;*/
-        @apply(--saint-edit-item-input);  
+      --saint-dropdown-input: {
+        @apply(--saint-edit-item-input);
+      };
+      --saint-dropdown-item: {
+        @apply(--saint-edit-item-dropdown-item);
       };
     }
     paper-item.item {
@@ -115,6 +117,7 @@ Example:
     paper-item .item-value {
       padding: 8px 0px;
       align-self: flex-start;
+      @apply(--saint-edit-item-value);
       @apply(--layout-flex);  
     }
     paper-item .item-buttons {
@@ -410,7 +413,6 @@ Example:
     save: function() {
       this.toggle();
       var inputs = this.querySelectorAll('.input.' + this.type);
-      console.log(inputs);
       var temps = [];
       var values = [];
       for (var i = 0; i < inputs.length; i++) {
@@ -433,7 +435,7 @@ Example:
                     type: this.type,
                     text: this._getText[0]};
 
-      result.value = this.isMultiValue || this.type === 'list' ? temps : temps[0].value;
+      result.value = this.isMultiValue ? temps : temps[0].value;
       this.value = this.isMultiValue ? JSON.stringify(values) : temps[0].value;
 
 
