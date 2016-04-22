@@ -351,6 +351,10 @@ Example:
         observer: '_observeValue',
         notify: true,
       },
+      valueKey: {
+        type: String,
+        value: null
+      },
       _value: {
         type: String,
         computed: '_observeValue(value)'
@@ -442,6 +446,7 @@ Example:
       this.fire('item-save', {result: result});
       return result;
     },
+
     /**
      * toggle edit, viewer mode
      */
@@ -463,9 +468,7 @@ Example:
       }
       this._isEdit = !this._isEdit;
     },
-    
-    
-    
+
     _computeText: function(type, value) {
       switch (type) {
         case 'list':
@@ -490,6 +493,9 @@ Example:
       return this._computeText(this.type, this._getValue(index));
     },
     _getValue: function(index) {
+      if (this.valueKey) {
+        return this._values[index][this.valueKey];
+      }
       return this._values[index];
     },
     _isFirst: function(index) {
@@ -506,13 +512,18 @@ Example:
     _observeValue: function(newValue, oldValue) {
       if (this.isMultiValue) {
         var temp;
-        try {
-          temp = JSON.parse(newValue);
-        } catch(e) {
-          temp = String(newValue).split(',');
-        }
-        if (typeof temp !== 'object') {
-          temp = [temp];
+        
+        if (!this.valueKey) {
+          try {
+            temp = JSON.parse(newValue);
+          } catch(e) {
+            temp = String(newValue).split(',');
+          }
+          if (typeof temp !== 'object') {
+            temp = [temp];
+          }        
+        } else {
+          temp = newValue;
         }
         this._values = temp;
       } else {
