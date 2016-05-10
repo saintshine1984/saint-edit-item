@@ -7,17 +7,17 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-input/paper-textarea.html">
 <link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../saint-dropdown-menu/saint-dropdown-menu.html">
+<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../saint-datepicker/saint-datepicker.html">
+<link rel="import" href="../saint-dropdown-menu/saint-dropdown-menu.html">
 <link rel="import" href="../saint-ntb-converter/saint-ntb-converter.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <script src="../jquery/dist/jquery.min.js"></script>
 
 <!--
@@ -60,6 +60,18 @@ Example:
       is-single-mode>
     </saint-edit-item>
 
+--saint-edit-item-input-container (--paper-input-container)
+--saint-edit-item-input           (--paper-input-container-input)
+
+// TODO 
+
+
+
+
+
+
+
+
 @demo
 -->
 <dom-module id="saint-edit-item">
@@ -69,15 +81,18 @@ Example:
     :host {
       
     }
-    #viewer {
-      
-    }
-    #editor {
-      display: none;
+
+    .saint-edit-item-viewer,
+    .saint-edit-item-editor {
+      min-height: 40px;
+      @apply(--layout-flex);
+      @apply(--layout-horizontal);      
     }
 
-    #editor /deep/ paper-input,
-    #editor /deep/ paper-textarea {
+    paper-input,
+    paper-textarea, 
+    saint-datepicker, 
+    saint-dropdown-menu {
       width: 100%;
       --paper-input-container: {
         @apply(--saint-edit-item-input-container);
@@ -85,58 +100,68 @@ Example:
       --paper-input-container-input: {
         @apply(--saint-edit-item-input);
       };
-    }
-    #editor saint-datepicker {
-      width: 100%;
-      --saint-datepicker-container: {
-        @apply(--layout-flex);
-      }
-    }
-    #editor saint-dropdown-menu {
-      width: 100%;
+      --saint-datepicker-container-input: {
+        @apply(--saint-edit-item-input);
+      };
       --saint-dropdown-input: {
         @apply(--saint-edit-item-input);
+      };
+      --saint-datepicker-dropdown-item: {
+        @apply(--saint-edit-item-dropdown-item);
       };
       --saint-dropdown-item: {
         @apply(--saint-edit-item-dropdown-item);
       };
     }
-    paper-item.item {
-      min-height: 40px;
-      @apply(--layout-flex); 
+
+    paper-item {
+      @apply(--layout-start);
       @apply(--layout-horizontal);
     }
+
     paper-item .item-label {
       min-width: 60px;
       min-height: 24px;
       padding: 8px;
       color: var(--paper-light-blue-a700);
-      align-self: flex-start;
       @apply(--saint-edit-item-label);
     }
+
     paper-item .item-value {
       padding: 8px 0px;
       align-self: flex-start;
       @apply(--saint-edit-item-value);
+      @apply(--layout-vertical);
       @apply(--layout-flex);  
     }
+
+    paper-item .item-text:not([mid="0"]) {
+      padding-top: 16px;
+    }
+
+    paper-item .item-inputs {
+      @apply(--layout-vertical);
+      @apply(--layout-flex);  
+      @apply(--saint-edit-item-input);
+    }
+
+    paper-item .item-input {
+      @apply(--layout-horizontal);
+    }
+
     paper-item .item-buttons {
       align-self: flex-start;
+      @apply(--layout-horizontal);
     }
+
     paper-item .item-buttons #btnSave {
       color: var(--paper-light-green-a700);
       @apply(--saint-edit-item-button-save);
     }
+
     paper-item .item-buttons #btnCancel {
       color: var(--paper-red-a100);
       @apply(--saint-edit-item-button-cancel);
-    }
-    paper-item .item-input {
-      @apply(--layout-flex);  
-      @apply(--saint-edit-item-input);  
-    }
-    paper-item .item-text:not([mid="0"]) {
-      padding-top: 16px;
     }
 
     paper-icon-button {
@@ -149,86 +174,135 @@ Example:
         padding: 0;
       }
     }
+
   </style>
 
   <template>
-    <div id="viewer">
-      <paper-item class="item">
-        <template is="dom-if" if="{{!noLabel}}">
-          <div class="item-label">{{label}}</div>
-        </template>
-        <div class="item-value vertical layout">
+    
+    <paper-item class="item">
+
+      <!-- Label -->
+      <template is="dom-if" if="{{!noLabel}}">
+
+        <div class="item-label">{{label}}</div>
+
+      </template>
+
+      <!-- viewer -->
+      <div class="saint-edit-item-viewer">
+
+        <div class="item-value">
+
+          <!-- tamplate: display text  -->
           <template is="dom-repeat" items="{{_values}}">
+
             <div class="item-text" mid$={{index}}>
+
               <saint-ntb-converter
                 break-row="1000"
-                content="{{_getText(index, item)}}">              
+                content="{{_computeText(type, index, item)}}"
+                placeholder={{placeholder}}
+                post-fix="{{postFix}}">
               </saint-ntb-converter>
-            </div>
-          </template>
-        </div>
-        <template is="dom-if" if="{{isSingleMode}}">
-          <template is="dom-if" if="{{!readOnly}}">
-            <paper-icon-button
-              icon="icons:create"
-              on-click="toggle">
-            </paper-icon-button>
-          </template>
-        </template>
-      </paper-item>
-    </div>
 
-    <div id="editor">      
-      <paper-item class="item">
-        <template is="dom-if" if="{{!noLabel}}">
-          <div class="item-label">{{label}}</div>
+            </div>
+
+          </template>
+          <!-- End tamplate: display text  -->
+
+        </div>
+
+        <!-- template: Edit Button for single edit mode -->
+        <template is="dom-if" if="{{_checkSingleEditMode(singleEditMode, readOnly)}}">
+
+          <paper-icon-button
+            icon="icons:create"
+            on-click="toggle">
+          </paper-icon-button>
+
+        
         </template>
-        <div class="item-input vertical layout">
+
+
+      </div>
+      <!-- End viewer -->
+
+      <!-- editor -->
+      <div class="saint-edit-item-editor" hidden>
+
+        <!-- item-input -->
+        <div class="item-inputs">
+
+          <!-- inpute template -->
           <template is="dom-repeat" items="{{_values}}">
-            <div class="horizontal layout">
+
+            <div class="item-input">
+
               <!-- Type: Text -->
               <template is="dom-if" if="{{_isTypeCheck(type, 'text')}}">
                 <paper-input
                   id="{{name}}"
+                  placeholder={{placeholder}}
                   mid$="{{index}}"
+                  type="text"
                   class="input text"
                   value="{{_getValue(index, item)}}"
                   read-only=[[readOnly]]
                   no-label-float>
                 </paper-input>
               </template>
+
+              <!-- Type: Number -->
+              <template is="dom-if" if="{{_isTypeCheck(type, 'number')}}">
+                <paper-input
+                  id="{{name}}"
+                  placeholder={{placeholder}}
+                  mid$="{{index}}"
+                  type="number"
+                  class="input number"
+                  value="{{_getValue(index, item)}}"
+                  read-only=[[readOnly]]
+                  no-label-float>
+                </paper-input>
+              </template>
+              
               <!-- Type: TextArea -->
               <template is="dom-if" if="{{_isTypeCheck(type, 'textarea')}}">
                 <paper-textarea
                   id="{{name}}"
+                  placeholder="{{placeholder}}"
                   mid$="{{index}}"
                   class="input textarea"
+                  char-counter
+                  maxlength="1000"
                   value="{{_getValue(index, item)}}"
                   read-only=[[readOnly]]
                   no-label-float>
                 </paper-textarea>
               </template>
+              
               <!-- Type: List -->
               <template is="dom-if" if="{{_isTypeCheck(type, 'list')}}">
                 <saint-dropdown-menu
                   id="{{name}}"
                   mid$="{{index}}"
                   class="input list"
-                  selected="{{_getValue(index, item)}}"
-                  no-display-error
+                  on-select="_onSelectDropdownMenu"
+                  selected="[[_getValue(index, item)]]"
                   no-label-float>                      
                   <template is="dom-repeat" items="{{referenceList}}">
                     <paper-item value$="{{index}}">{{_getListItemText(item)}}</paper-item>
                   </template>
                 </saint-dropdown-menu> 
               </template>
-              <!-- Type: Birthday -->
+              
+              <!-- Type: Birthday selected$="{{_getValue(index, item)}}"-->
               <template is="dom-if" if="{{_isTypeCheck(type, 'date')}}">
                 <saint-datepicker
                   id="{{name}}"
                   mid$="{{index}}"
                   class="input date"
-                  init-date$="{{_getValue(index, item)}}"
+                  selected$="{{_getValue(index, item)}}"
                   no-label-float
                   year-label="年"
                   month-label="月"
@@ -241,24 +315,23 @@ Example:
                 </saint-datepicker>
               </template>
 
+              <!-- Add / Remove icon button for multi value -->
               <template is="dom-if" if="{{isMultiValue}}">
-                <template is="dom-if" if="{{_isFirst(index)}}">            
-                  <paper-icon-button
-                    icon="icons:add"
-                    on-click="_onClickMaAdd"></paper-icon-button>
-                </template>
-                <template is="dom-if" if="{{!_isFirst(index)}}">
-                  <paper-icon-button
-                    icon="icons:remove"
-                    name$="{{name}}"
-                    mid$="{{index}}"
-                    on-click="_onClickMaRemove"></paper-icon-button>
-                </template>
+                <paper-icon-button
+                  mid$="{{index}}"
+                  name$="{{name}}"
+                  icon="{{_computeMultiValueIcon(index)}}"
+                  on-click="_onClickMultiValueIcon">
+                </paper-icon-button>
               </template>
             </div>
+            <!--  -->
           </template>
+          <!-- End inpute template -->
         </div>
-        <template is="dom-if" if="{{isSingleMode}}">
+        <!-- End item-input -->
+
+        <template is="dom-if" if="{{singleEditMode}}">
           <template is="dom-if" if="{{!readOnly}}">
             <div class="item-buttons">
               <!-- Save Button -->
@@ -276,18 +349,23 @@ Example:
             </div>
           </template>
         </template>
-      </paper-item>
-      
-    </div>
-    
 
+      </div>
+      <!-- End editor -->
+  
+    </paper-item>
+    
   </template>
 </dom-module>
 
 <script>
+
   Polymer({
+
     is: 'saint-edit-item',
+
     properties: {
+
       /**
        * Can Add More Values. Return result type is array.
        */
@@ -296,20 +374,32 @@ Example:
         value: false,
         reflectToAttribute: true
       },
+
       /**
-       * Can using function button individually.
+       * no allow overlap.
        */
-      isSingleMode: {
+      noOverlap: {
         type: Boolean,
         value: false,
         reflectToAttribute: true
       },
+
+      /**
+       * Can using function button individually.
+       */
+      singleEditMode: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      },
+
       /**
        * Item Label
        */
       label: {
         type: String,
       },
+
       /**
        * Hide label.
        */
@@ -318,6 +408,7 @@ Example:
         value: false,
         reflectToAttribute: true
       },
+
       /**
        * can not edit value.
        */
@@ -326,6 +417,7 @@ Example:
         value: false,
         reflectToAttribute: true
       },
+
       /**
        * create drop-down menu list using this array.
        *
@@ -333,36 +425,56 @@ Example:
        */
       referenceList: {
         type: Array,
-        observer: '_observeList'
       },
+
+      required: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      },
+
       /**
        * item type. Select in text, list, date.
-       * @type {{'"text"', '"list"', '"date"'}}
+       * @type {{'"text"', '"number"', '"list"', '"date"'}}
        */
       type: {
         type: String,
         value: 'text'
       },
+
       /**
        * value
        */
-      value: {
+      selected: {
         type: String,
-        observer: '_observeValue',
+        observer: '_observeSelected',
         notify: true,
       },
-      valueKey: {
+
+      /**
+       * id key for object type value
+       */
+      objectKeyId: {
         type: String,
-        value: null
+        value: 'id'
       },
-      _value: {
+
+      /**
+       * name key for object type value
+       */
+      objectKeyName: {
         type: String,
-        computed: '_observeValue(value)'
+        value: 'name'
       },
-      _isEdit: {
+      
+      _showEditorMode: {
         type: Boolean,
-        value: false,
+        value: true,
       },
+
+      /**
+       * display value
+       */
       _values: {
         type: Array,
         value: [],
@@ -379,24 +491,24 @@ Example:
 
     // Element Lifecycle
     ready: function() {
-
+      
 
     },
-    /**
-     * Cancel Editing
-     **/
-    cancel: function() {
-      this.toggle();
+    undo: function() {
       var inputs = this.querySelectorAll('.input.' + this.type);
       this._values = this._oldValue;
-      for (var i = 0; i < inputs.length; i++) {
+
+      for (var i = 0; i < inputs.length && i < this._values.length; i++) {
+
         var input = inputs[i];
         var value = this._getValue(i);
+
         switch (this.type) {
           case 'list':
             input.selected = Number(value);
             break;
-          case 'text':
+          case 'textarea':
+          case 'text':          
           case 'number':
             input.value = value;
             break;
@@ -410,153 +522,351 @@ Example:
       }
     },
     /**
+     * Cancel Editing
+     **/
+    cancel: function() {
+      this.toggle(false);
+      this.undo();      
+    },
+    /**
      * Save current edit item value
      *
      * @return {object} JSON type object return.
      */
     save: function() {
-      this.toggle();
-      var inputs = this.querySelectorAll('.input.' + this.type);
-      var temps = [];
+
+      if (!this._validate()) {
+        return;
+      }
+
       var values = [];
-      for (var i = 0; i < inputs.length; i++) {
-        var input = inputs[i];
-        var temp = {};
-        temp.value = input.value;
-        if (this.isMultiValue) {          
-          if (this.type === 'list') {
-            temp.name = this._getListItemText(this.referenceList[input.value]);  
-            values = values.concat([Number(input.value)]);
-          } else {
-            temp = input.value;
-            values = values.concat([input.value]);
+
+      // list type was already set value by on select event.
+      if (this.type === 'list') {
+
+        for (var i = 0; i < this._values.length; i++) {
+
+          var item = this._values[i];
+          var itemId = Number(item[this.objectKeyId]);
+          
+          if (itemId === 0 && this._values.length > 1) {
+            // Pass
+            continue;
+          }
+
+          // Check Overlap
+          var overlab = false;
+
+          if (this.isMultiValue && this.noOverlap) {
+            
+            for (var j = i - 1; j >= 0; j--) {
+
+              var compareItem = this._values[j];
+              var compareId = Number(compareItem[this.objectKeyId]);
+
+              if (itemId === compareId) {
+                // set overlap true
+                overlab = true;
+              }
+            }
+          }
+
+          if (overlab === false) {
+
+            values = values.concat(item);
+
           }
         }
-        temps = temps.concat(temp);
+
+        this._values = values;          
+
+      } else {
+        // text, textarea, number...
+
+        var inputs = this.querySelectorAll('.input.' + this.type);
+
+        for (var i = 0; i < inputs.length; i++) {
+
+          var value = inputs[i].value;
+
+          if (this.type === 'number') {
+            // convert number
+            value = Number(value);
+
+          }
+
+          values = values.concat(value);
+
+        }
+        
+        this._values = values;
+        
+        if (this.type !== 'list' && this.isMultiValue === false) {
+          // for result
+          values = values[0];
+
+        }
       }
-      
-      var result = {name: this.name,
-                    type: this.type,
-                    text: this._getText[0]};
 
-      result.value = this.isMultiValue ? temps : temps[0].value;
-      this.value = this.isMultiValue ? JSON.stringify(values) : temps[0].value;
+      var result = {};
 
+      result.name = this.name;
+      result.type = this.type;
+      result.value = values;
 
+      // hide edit mode
+      this.toggle(false);
+
+      // fire event
       this.fire('item-save', {result: result});
+
+      console.log(result);
+
       return result;
     },
 
     /**
      * toggle edit, viewer mode
+     * @param {boolean} showEditor set true show edit mode, set false show viewer
      */
-    toggle: function() {
-      var viewer = this.$.viewer;
-      var editor = this.$.editor;
+    toggle: function(showEditorMode) {
+      
+      if (this.readOnly) {
+        // only viwer mode
+        return;
+      }
 
-      if (this._isEdit) {
-        if (!this.readOnly) {
-          $(viewer).show();
-          $(editor).hide();
-        }
-      } else {
-        if (!this.readOnly) {
-          $(viewer).hide();
-          $(editor).show();
-        }
-        this._oldValue = this._values.slice(0, this._values.length);  
+      if (typeof showEditorMode === 'boolean') {
+        this._showEditorMode = showEditorMode;
       }
-      this._isEdit = !this._isEdit;
+
+
+
+      var editor = this.querySelector('.saint-edit-item-editor');
+      var viewer = this.querySelector('.saint-edit-item-viewer');
+
+      this.toggleAttribute('hidden', !this._showEditorMode, editor);
+      this.toggleAttribute('hidden', this._showEditorMode, viewer);
+
+      // $(editor).toggle(this._showEditorMode);
+      // $(viewer).toggle(!this._showEditorMode);
+      
+      if (this._showEditorMode) {
+        this._oldValue = this._values.slice(0, this._values.length);
+      }
+
+      this.refresh();
+      this._showEditorMode = !this._showEditorMode;
+
+    },
+    refresh: function() {
+      setTimeout(function() {
+        this._values = this._values.concat();
+      }.bind(this));
+    },
+    _checkSingleEditMode: function(singleEditMode, readOnly) {
+      console.log(singleEditMode);
+      return singleEditMode && !readOnly;
     },
 
-    _computeText: function(type, value) {
-      switch (type) {
-        case 'list':
-          if (this.referenceList) {
-            var item = this.referenceList[Number(value)];
-            var text = this._getListItemText(item);
-            return text;
-          }
-        case 'text':
-        case 'number':
-        case 'date':
-          return value;
-      }
-      return value;
-    },
-    _getListItemText: function(item) {
-      if (item !== undefined) {
-        return (typeof item === 'string') ? item : item.name;  
-      }
-    },
-    _getText: function(index) {
-      return this._computeText(this.type, this._getValue(index));
-    },
-    _getValue: function(index) {
-      if (this.valueKey) {
-        return this._values[index][this.valueKey];
-      }
-      return this._values[index];
-    },
-    _isFirst: function(index) {
-      return index === 0;
-    },
-    _isTypeCheck: function(type, check) {
-      return type === check;
-    },
-    _observeList: function() {
-      for (var i = 0; i < this._values.length; i++) {
-        this._computeText(this.type, this._values[i]);
-      }      
-    },
-    _observeValue: function(newValue, oldValue) {
-      if (this.isMultiValue) {
-        var temp;
-        
-        if (!this.valueKey) {
-          try {
-            temp = JSON.parse(newValue);
-          } catch(e) {
-            temp = String(newValue).split(',');
-          }
-          if (typeof temp !== 'object') {
-            temp = [temp];
-          }        
-        } else {
-          temp = newValue;
-        }
-        this._values = temp;
-      } else {
-        this._values = [];
-        this._values = this._values.concat([newValue]);
-      }
-    },
-    _onClickMaAdd: function() {      
-      this._values = this._values.concat(['']);
-    },
-    _onClickMaRemove: function(event) {
-      var button = Polymer.dom(event).localTarget;
-      var mid = button.getAttribute('mid');
-      var name = button.getAttribute('name');
-      var query = '#' + name + '[mid="' + mid + '"]';
-      var input = this.querySelector(query);
-      this._values.splice(Number(mid), 1);
-      this._values = this._values.concat();
-    },
     /**
-     * for set date
-     **/
-    _onReadyDate: function(event) {
-      var test = event.target;
-      var date = test.getAttribute('init-date');
-      if (date) {
-        var temp = date.split('-');
-        var year = parseInt(temp[0]);
-        var month = parseInt(temp[1]);
-        var day = parseInt(temp[2]);
-        test.setDate(year, month, day);
-      }
+     * _onSelectDropdownMenu
+     */
+    _onSelectDropdownMenu: function(event) {
+      this._values[event.model.index] = this.referenceList[event.detail.value];
     },
-    
+
+    /**
+     * _validate
+     */
+    _validate: function() {
+
+      var isValid = true;
+
+      var inputs = this.querySelectorAll('.input.' + this.type);
+
+      for (var i = 0; i < inputs.length; i++) {
+
+        isValid = isValid && inputs[i].validate();
+
+      }
+
+      return isValid;
+
+    },
+
+    /**
+     * _computeText
+     * @param {string} type item type.
+     * @param {string} value item value.
+     * @return {string} return text for display
+     */
+    _computeText: function(type, index, item) {
+
+      if (typeof item === 'undefined') {
+        return;
+      }
+
+      switch (type) {
+
+        case 'list':
+
+          if (this.referenceList) {
+
+            item = this._getListItemText(item);
+
+          }
+
+          break;
+
+        case 'number':
+          item = item.toString();
+          break;
+
+        case 'text':
+        case 'textarea':
+        case 'date':
+        default:
+      }
+
+      return item;
+
+    },
+
+    /**
+     * get item text
+     * @param {object} item item.
+     * @return {string} return text for display
+     */
+    _getListItemText: function(item) {
+
+      if (typeof item !== 'undefined') {
+
+        return (typeof item === 'string') ? item : item[this.objectKeyName];  
+
+      }
+
+    },
+
+    _getValue: function(index) {
+
+      var value = this._values[index];
+
+      if (typeof value === 'object') {
+
+        return this._values[index][this.objectKeyId];
+
+      }
+
+      return value;
+
+    },
+
+    /**
+     * compute add remove icon
+     */
+    _computeMultiValueIcon: function(index) {
+
+      return index === 0 ? 'icons:add' : 'icons:remove';
+
+    },
+
+    /**
+     * type check
+     */
+    _isTypeCheck: function(type, check) {
+
+      return type === check;
+
+    },
+
+    /**
+     * observe value
+     */
+    _observeSelected: function(newValue, oldValue) {
+
+      this._values = [];
+
+      if (typeof newValue === 'string') {
+        
+        try {
+          // Check JSON String?
+          newValue = JSON.parse(newValue);
+        
+        } catch(e) {
+          // Check List value string split by comma
+          newValue = (this.isMultiValue) ? String(newValue).split(',') : newValue;
+          
+        }
+
+        if (Object.prototype.toString.call(newValue) === '[object Array]') {
+          
+          if (newValue.length !== 0) {
+            // is Array Object
+            this._values = newValue;
+
+          } else if (this.referenceList) {
+            
+            this._values = [this.referenceList[0]];
+          
+          } else {
+
+            this._values = [0];
+
+          }
+
+        } else {
+          // string value make to Array
+          this._values = [newValue];
+
+        }
+      }
+
+      this.refresh();
+
+    },
+
+    /**
+     * Add or Remove Item
+     */
+    _onClickMultiValueIcon: function(event) {      
+
+      var index = event.model.index;
+
+      if (index === 0) {
+        var input = this.querySelector('.input.' + this.type + '[mid="' + index + '"]');
+        input.required = true;
+        var vaild = this._validate();
+        input.required = false;
+        
+        if (vaild === false) {        
+          return;
+        };
+
+        var temp;
+
+        // Add
+        if (this.type === 'list') {
+
+          // Get default value
+          temp = this.referenceList[0];
+
+        } else {
+
+          // Set empty value
+          temp = [''];
+
+        }
+
+        this._values = this._values.concat(temp);
+
+      } else {
+
+        // Remove
+        this._values.splice(Number(index), 1);
+        this.refresh();
+
+      }
+    },    
   });
 </script>

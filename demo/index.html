@@ -69,14 +69,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <saint-edit-item
               name="name"
               type="text"
-              value="SHIN"
+              selected="SHIN"
               label="Name">
             </saint-edit-item>
 
             <saint-edit-item 
               name="birthday"
               type="date"
-              value="1984-04-02"
+              selected="1984-04-02"
               label="Birthday">
             </saint-edit-item>
 
@@ -84,7 +84,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               name="area"
               type="list"
               reference-list$="{{fruits}}"
-              value="[1,2,0]"
+              selected="[1,2,0]"
               is-multi-value
               label="Fruits">
             </saint-edit-item>
@@ -104,37 +104,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <saint-edit-item
           name="id"
           type="text"
-          value="testUserID-1283"
+          selected="testUserID-1283"
           label="ID"
           read-only
-          is-single-mode
+          single-edit-mode
           on-item-save="onSave">
         </saint-edit-item>
         <saint-edit-item
           name="name"
           type="text"
-          value="テスト"
+          selected="テスト"
           label="名前"
-          is-single-mode
+          single-edit-mode
           on-item-save="onSave">
         </saint-edit-item>
 
         <saint-edit-item
           name="hobby"
           type="text"
-          value="運動,ゲーム"
+          selected="運動,ゲーム"
           label="趣味"
           is-multi-value
-          is-single-mode
+          single-edit-mode
           on-item-save="onSave">
         </saint-edit-item>
 
         <saint-edit-item 
           name="birthday"
           type="date"
-          value="1984-04-02"
+          selected="1984-04-02"
           label="誕生日"
-          is-single-mode
+          single-edit-mode
           on-item-save="onSave">
         </saint-edit-item>
 
@@ -142,10 +142,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           name="area"
           type="list"
           reference-list$="{{fruits}}"
-          value="1"
+          selected="1"
           label="果物"
           is-multi-value
-          is-single-mode
+          single-edit-mode
           on-item-save="onSave">
         </saint-edit-item>
 
@@ -153,9 +153,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           name="area"
           type="list"
           reference-list$="{{bodyTypes}}"
-          value="1"
+          selected="1"
           label="体型"
-          is-single-mode
+          single-edit-mode
           on-item-save="onSave">
         </saint-edit-item>
         <div>
