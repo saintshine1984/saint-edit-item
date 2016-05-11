@@ -114,7 +114,12 @@ Example:
       };
     }
 
+    saint-ntb-converter.typeError {
+      --saint-ntb-converter-text-color: var(--paper-red-500);
+    }
+
     paper-item {
+      min-height: 40px;
       @apply(--layout-start);
       @apply(--layout-horizontal);
     }
@@ -198,12 +203,25 @@ Example:
 
             <div class="item-text" mid$={{index}}>
 
-              <saint-ntb-converter
-                break-row="1000"
-                content="{{_computeText(type, index, item)}}"
-                placeholder={{placeholder}}
-                post-fix="{{postFix}}">
-              </saint-ntb-converter>
+              <template is="dom-if" if="{{_isTypeCheck(type)}}">
+                
+                <saint-ntb-converter
+                  class="typeError"
+                  content="Type Error : {{type}} is wrong type">
+                </saint-ntb-converter>
+
+              </template>
+
+              <template is="dom-if" if="{{!_isTypeCheck(type)}}">
+
+                <saint-ntb-converter
+                  break-row="{{breakRow}}"
+                  content="{{_computeText(type, index, item)}}"
+                  placeholder={{placeholder}}
+                  post-fix="{{postFix}}">
+                </saint-ntb-converter>
+
+              </template>
 
             </div>
 
@@ -220,7 +238,6 @@ Example:
             on-click="toggle">
           </paper-icon-button>
 
-        
         </template>
 
 
@@ -367,6 +384,14 @@ Example:
     properties: {
 
       /**
+       * for multiline type of textarea
+       */
+      breakRow: {
+        type: Number,
+        value: 10
+      },
+
+      /**
        * Can Add More Values. Return result type is array.
        */
       isMultiValue: {
@@ -466,6 +491,10 @@ Example:
         type: String,
         value: 'name'
       },
+      _types: {
+        type: Array,
+        value: ['text', 'textarea', 'number', 'date', 'list']
+      },
       
       _showEditorMode: {
         type: Boolean,
@@ -478,7 +507,6 @@ Example:
       _values: {
         type: Array,
         value: [],
-        notify: true,
       },
     },
 
@@ -492,11 +520,20 @@ Example:
     // Element Lifecycle
     ready: function() {
       
-
     },
+
+    /**
+     *
+     */
     undo: function() {
+
+      if (this.readOnly) {
+        return;
+      }
+
       var inputs = this.querySelectorAll('.input.' + this.type);
-      this._values = this._oldValue;
+
+      this._values = JSON.parse(JSON.stringify(this._oldValue));
 
       for (var i = 0; i < inputs.length && i < this._values.length; i++) {
 
@@ -504,36 +541,49 @@ Example:
         var value = this._getValue(i);
 
         switch (this.type) {
+
           case 'list':
+
             input.selected = Number(value);
             break;
-          case 'textarea':
-          case 'text':          
-          case 'number':
-            input.value = value;
-            break;
+
           case 'date':
+
             var temp = value.split('-');
             input.year = Number(temp[0]);
             input.month = Number(temp[1]);
             input.day = Number(temp[2]);
             break;
+
+          case 'textarea':
+          case 'text':          
+          case 'number':
+          default:
+
+            input.value = value;
+            break;
         }
       }
     },
+
     /**
-     * Cancel Editing
+     * cancel Editing
      **/
     cancel: function() {
       this.toggle(false);
       this.undo();      
     },
+
     /**
      * Save current edit item value
      *
-     * @return {object} JSON type object return.
+     * @return {object} return result by JSON type object.
      */
     save: function() {
+
+      if (this.readOnly) {
+        return;
+      }
 
       if (!this._validate()) {
         return;
@@ -578,7 +628,13 @@ Example:
           }
         }
 
-        this._values = values;          
+        this._values = JSON.parse(JSON.stringify(values));
+
+        if (this.isMultiValue === false) {
+
+          values = values[0][this.objectKeyId];  
+
+        }
 
       } else {
         // text, textarea, number...
@@ -601,10 +657,10 @@ Example:
         
         this._values = values;
         
-        if (this.type !== 'list' && this.isMultiValue === false) {
-          // for result
+        if (this.isMultiValue === false) {
+          
           values = values[0];
-
+            
         }
       }
 
@@ -630,38 +686,44 @@ Example:
     toggle: function(showEditorMode) {
       
       if (this.readOnly) {
-        // only viwer mode
         return;
       }
 
       if (typeof showEditorMode === 'boolean') {
+
         this._showEditorMode = showEditorMode;
+
       }
-
-
 
       var editor = this.querySelector('.saint-edit-item-editor');
       var viewer = this.querySelector('.saint-edit-item-viewer');
 
       this.toggleAttribute('hidden', !this._showEditorMode, editor);
       this.toggleAttribute('hidden', this._showEditorMode, viewer);
-
-      // $(editor).toggle(this._showEditorMode);
-      // $(viewer).toggle(!this._showEditorMode);
       
       if (this._showEditorMode) {
-        this._oldValue = this._values.slice(0, this._values.length);
+
+        this._oldValue = JSON.parse(JSON.stringify(this._values));
+
       }
 
       this.refresh();
       this._showEditorMode = !this._showEditorMode;
 
     },
+
+    /**
+     *
+     */
     refresh: function() {
       setTimeout(function() {
         this._values = this._values.concat();
       }.bind(this));
     },
+
+    /**
+     *
+     */
     _checkSingleEditMode: function(singleEditMode, readOnly) {
       return singleEditMode && !readOnly;
     },
@@ -699,6 +761,7 @@ Example:
      * @return {string} return text for display
      */
     _computeText: function(type, index, item) {
+      // console.warn('compute Text', this._values, this.name, type, index, item);
 
       if (typeof item === 'undefined') {
         return;
@@ -709,6 +772,10 @@ Example:
         case 'list':
 
           if (this.referenceList) {
+
+            if (typeof item !== 'object') {
+              item = this.referenceList[Number(item)];
+            }
 
             item = this._getListItemText(item);
 
@@ -725,7 +792,6 @@ Example:
         case 'date':
         default:
       }
-
       return item;
 
     },
@@ -739,7 +805,7 @@ Example:
 
       if (typeof item !== 'undefined') {
 
-        return (typeof item === 'string') ? item : item[this.objectKeyName];  
+        return (typeof item === 'object') ? item[this.objectKeyName] : item;  
 
       }
 
@@ -772,8 +838,10 @@ Example:
      * type check
      */
     _isTypeCheck: function(type, check) {
-
-      return type === check;
+      if (check) {
+        return type === check;        
+      }
+      return this._types.indexOf(type) < 0;
 
     },
 
@@ -781,42 +849,48 @@ Example:
      * observe value
      */
     _observeSelected: function(newValue, oldValue) {
-
-      this._values = [];
-
-      if (typeof newValue === 'string') {
+      
+      if (typeof newValue === 'object') {
+        
+        this._values = newValue;
+        
+      } else if (typeof newValue === 'string') {
         
         try {
           // Check JSON String?
           newValue = JSON.parse(newValue);
         
         } catch(e) {
-          // Check List value string split by comma
+          // Try List value string split by comma
           newValue = (this.isMultiValue) ? String(newValue).split(',') : newValue;
-          
+
         }
 
         if (Object.prototype.toString.call(newValue) === '[object Array]') {
           
-          if (newValue.length !== 0) {
-            // is Array Object
-            this._values = newValue;
+          if (newValue.length === 0) {
 
-          } else if (this.referenceList) {
+            if (this.referenceList) {
+              
+              newValue = [this.referenceList[0]];
             
-            this._values = [this.referenceList[0]];
-          
-          } else {
+            } else {
 
-            this._values = [0];
+              newValue = [0];
+
+            }
 
           }
 
         } else {
+
           // string value make to Array
-          this._values = [newValue];
+          newValue = [newValue];
 
         }
+
+        this._values = newValue;
+
       }
 
       this.refresh();
