@@ -620,8 +620,6 @@ Example:
       // fire event
       this.fire('item-save', {result: result});
 
-      console.log(result);
-
       return result;
     },
 
@@ -665,7 +663,6 @@ Example:
       }.bind(this));
     },
     _checkSingleEditMode: function(singleEditMode, readOnly) {
-      console.log(singleEditMode);
       return singleEditMode && !readOnly;
     },
 
