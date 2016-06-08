@@ -134,10 +134,7 @@ Example:
 
     paper-item .item-value {
       padding: 8px 0px;
-      align-self: flex-start;
       @apply(--saint-edit-item-value);
-      @apply(--layout-vertical);
-      @apply(--layout-flex);  
     }
 
     paper-item .item-text:not([mid="0"]) {
@@ -217,7 +214,7 @@ Example:
                 <saint-ntb-converter
                   break-row="{{breakRow}}"
                   content="{{_computeText(type, index, item)}}"
-                  placeholder={{placeholder}}
+                  placeholder="{{placeholder}}"
                   post-fix="{{postFix}}">
                 </saint-ntb-converter>
 
@@ -716,9 +713,17 @@ Example:
      *
      */
     refresh: function() {
+
       setTimeout(function() {
-        this._values = this._values.concat();
+
+        if (this._values) {
+
+          this._values = this._values.concat();
+          
+        }
+
       }.bind(this));
+
     },
 
     /**
@@ -761,7 +766,6 @@ Example:
      * @return {string} return text for display
      */
     _computeText: function(type, index, item) {
-      // console.warn('compute Text', this._values, this.name, type, index, item);
 
       if (typeof item === 'undefined') {
         return;
@@ -849,12 +853,12 @@ Example:
      * observe value
      */
     _observeSelected: function(newValue, oldValue) {
-      
-      if (typeof newValue === 'object') {
+     
+      if (newValue && typeof newValue === 'object') {
         
         this._values = newValue;
         
-      } else if (typeof newValue === 'string') {
+      } else if (newValue && typeof newValue === 'string') {
         
         try {
           // Check JSON String?
@@ -891,7 +895,12 @@ Example:
 
         this._values = newValue;
 
+      } else {
+
+        this._values = [''];
+
       }
+
 
       this.refresh();
 
